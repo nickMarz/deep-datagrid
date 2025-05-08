@@ -6,45 +6,13 @@ import { Task } from '@/types/task';
 import { UserCellRenderer, UserCellEditor } from '@/components/grid/cells/UserCell';
 import { mockTasks } from '@/data/mockTasks';
 import { VirtualizedDataGrid } from '@/components/grid/VirtualizedDataGrid';
+import { DataGrid } from '@/components/grid/DataGrid';
+import { generateColumnsFromData } from '@/types/grid';
 
 console.log(mockTasks);
 
-const columns: Column<Task>[] = [
-  {
-    id: 'id',
-    header: 'Task ID',
-    accessorKey: 'id',
-    type: 'text',
-    width: 100,
-    sortable: true,
-  },
-  {
-    id: 'title',
-    header: 'Title',
-    accessorKey: 'title',
-    type: 'text',
-    width: 300,
-    sortable: true,
-  },
-  {
-    id: 'status',
-    header: 'Status',
-    accessorKey: 'status',
-    type: 'tag',
-    width: 120,
-    sortable: true,
-  },
-  {
-    id: 'assignees',
-    header: 'Assignees',
-    accessorKey: 'assignees',
-    type: 'custom',
-    width: 200,
-    renderer: UserCellRenderer,
-    editor: UserCellEditor,
-    sortable: true,
-  },
-];
+const tasks = mockTasks;
+const columns = generateColumnsFromData(tasks);
 
 export default function Home() {
   const [sortedData, setSortedData] = useState<Task[]>([]);

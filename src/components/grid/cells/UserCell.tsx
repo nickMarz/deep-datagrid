@@ -64,7 +64,7 @@ export const UserCellEditor: CellEditor = {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [selectedUsers, setSelectedUsers] = useState<User[]>(value || []);
-    const searchTimeout = useRef<NodeJS.Timeout>();
+    const searchTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
 
     useEffect(() => {
       const fetchUsers = async () => {
