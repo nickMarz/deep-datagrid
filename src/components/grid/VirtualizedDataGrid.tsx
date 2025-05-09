@@ -8,10 +8,11 @@ const ROW_HEIGHT = 60; // Height of each row in pixels
 const cellStyles = {
   padding: '8px',
   borderRight: '1px solid #e5e7eb',
-  borderBottom: '1px solid #e5e7eb',
+  // borderBottom: '1px solid #e5e7eb',
   overflow: 'hidden',
   whiteSpace: 'nowrap',
   textOverflow: 'ellipsis',
+  flexShrink: 0, // Prevent cell from shrinking
 };
 
 const headerCellStyles = {
@@ -76,7 +77,12 @@ export function VirtualizedDataGrid<T extends Record<string, any>>({
           className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
             column.sortable ? 'cursor-pointer hover:bg-gray-100' : ''
           }`}
-          style={{ width: column.width }}
+          style={{
+            ...headerCellStyles,
+            width: column.width,
+            minWidth: column.width,
+            maxWidth: column.width,
+          }}
           onClick={() => handleSort(column)}
         >
           <div className="flex items-center gap-1">
@@ -120,7 +126,12 @@ export function VirtualizedDataGrid<T extends Record<string, any>>({
             <div
               key={column.id}
               className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-              style={{ width: column.width }}
+              style={{
+                ...cellStyles,
+                width: column.width,
+                minWidth: column.width,
+                maxWidth: column.width,
+              }}
               onClick={(e) => {
                 e.stopPropagation();
                 handleCellClick(index, column);
