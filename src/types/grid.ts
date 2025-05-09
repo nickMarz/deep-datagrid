@@ -11,10 +11,26 @@ const defaultCellRenderer: CellRenderer<any> = {
     }
     
     if (typeof value === 'object') {
-      return React.createElement('span', { className: 'text-gray-600' }, JSON.stringify(value));
+      const jsonString = JSON.stringify(value);
+      return React.createElement(
+        'div',
+        { 
+          className: 'truncate text-gray-600',
+          title: jsonString,
+        },
+        jsonString
+      );
     }
     
-    return React.createElement('span', null, String(value));
+    const stringValue = String(value);
+    return React.createElement(
+      'div',
+      { 
+        className: 'truncate',
+        title: stringValue,
+      },
+      stringValue
+    );
   }
 };
 
@@ -68,7 +84,7 @@ export interface CellRenderer<T = any> {
 }
 
 export interface CellEditor<T = any> {
-  edit: (value: any, row: T, onChange: (value: any) => void) => React.ReactNode;
+  edit: (value: any, row: T, onChange: (value: any) => void, cellPosition?: { top: number; left: number }) => React.ReactNode;
 }
 
 export interface GridProps<T = any> {

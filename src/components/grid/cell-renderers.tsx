@@ -52,9 +52,9 @@ export const NumberEditor: CellEditor = {
   )
 };
 
-export const DefaultCell: React.FC<CellProps> = ({ value, column, isEditing, onChange }) => {
+export const DefaultCell: React.FC<CellProps> = ({ value, column, isEditing, onChange, cellPosition }) => {
   if (isEditing && column.editor) {
-    return column.editor.edit(value, {}, onChange!);
+    return column.editor.edit(value, {}, onChange!, cellPosition);
   }
 
   if (column.renderer) {

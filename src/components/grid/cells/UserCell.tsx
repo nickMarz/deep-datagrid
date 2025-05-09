@@ -89,6 +89,12 @@ export const UserCellEditor: CellEditor = {
       }
 
       searchTimeout.current = setTimeout(fetchUsers, 300);
+
+      return () => {
+        if (searchTimeout.current) {
+          clearTimeout(searchTimeout.current);
+        }
+      };
     }, [search]);
 
     const toggleUser = (user: User) => {
@@ -99,17 +105,15 @@ export const UserCellEditor: CellEditor = {
       setSelectedUsers(newUsers);
       onChange(newUsers);
     };
-
-    console.log('cellPosition', cellPosition);
-    if (!cellPosition) return null;
-
+    console.log('cellPosition', cellPosition, cellPosition ? `${cellPosition.top + 40}px` : '0px');
+    console.log('cellPosition', cellPosition, cellPosition ? `${cellPosition.left + 40}px` : '0px');
     const editorContent = (
       <div
         className="w-[300px] bg-white rounded-lg shadow-lg p-2"
         style={{
           position: 'fixed',
-          top: `${cellPosition.top + 40}px`,
-          left: `${cellPosition.left}px`,
+          top: cellPosition ? `${cellPosition.top + 40}px` : '0px',
+          left: cellPosition ? `${cellPosition.left}px` : '0px',
           zIndex: 1000,
         }}
       >
