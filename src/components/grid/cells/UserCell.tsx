@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { createPortal } from 'react-dom';
 import { User } from '@/types/user';
 import { CellRenderer, CellEditor } from '@/types/grid';
 
@@ -58,7 +59,7 @@ export const UserCellRenderer: CellRenderer = {
 };
 
 export const UserCellEditor: CellEditor = {
-  edit: (value: User[], row: any, onChange: (users: User[]) => void) => {
+  edit: (value: User[], row: any, onChange: (users: User[]) => void, cellPosition?: { top: number; left: number }) => {
     const [search, setSearch] = useState('');
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(false);
@@ -99,8 +100,19 @@ export const UserCellEditor: CellEditor = {
       onChange(newUsers);
     };
 
-    return (
-      <div className="w-[300px] bg-white rounded-lg shadow-lg p-2">
+    console.log('cellPosition', cellPosition);
+    if (!cellPosition) return null;
+
+    const editorContent = (
+      <div
+        className="w-[300px] bg-white rounded-lg shadow-lg p-2"
+        style={{
+          position: 'fixed',
+          top: `${cellPosition.top + 40}px`,
+          left: `${cellPosition.left}px`,
+          zIndex: 1000,
+        }}
+      >
         <div className="flex flex-wrap gap-1 mb-2">
           {selectedUsers.map((user) => (
             <div
@@ -154,5 +166,9 @@ export const UserCellEditor: CellEditor = {
         </div>
       </div>
     );
+
+    return typeof window !== 'undefined'
+      ? createPortal(editorContent, document.body)
+      : editorContent;
   },
 }; 

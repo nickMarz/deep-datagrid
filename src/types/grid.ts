@@ -11,26 +11,10 @@ const defaultCellRenderer: CellRenderer<any> = {
     }
     
     if (typeof value === 'object') {
-      const jsonString = JSON.stringify(value);
-      return React.createElement(
-        'div',
-        { 
-          className: 'truncate text-gray-600',
-          title: jsonString,
-        },
-        jsonString
-      );
+      return React.createElement('span', { className: 'text-gray-600' }, JSON.stringify(value));
     }
     
-    const stringValue = String(value);
-    return React.createElement(
-      'div',
-      { 
-        className: 'truncate',
-        title: stringValue,
-      },
-      stringValue
-    );
+    return React.createElement('span', null, String(value));
   }
 };
 

@@ -31,16 +31,26 @@ export function VirtualizedDataGrid<T extends Record<string, any>>({
   onCellChange,
   onSort,
 }: GridProps<T>) {
-  const [editingCell, setEditingCell] = useState<{ rowIndex: number; columnId: string } | null>(null);
+  const [editingCell, setEditingCell] = useState<{ rowIndex: number; columnId: string; position?: { top: number; left: number } } | null>(null);
   const [sortConfig, setSortConfig] = useState<{ column: Column<T>; direction: SortDirection } | null>(null);
 
   useEffect(() => {
     console.log('VirtualizedDataGrid received data:', data);
   }, [data]);
 
-  const handleCellClick = useCallback((rowIndex: number, column: Column<T>) => {
+  const handleCellClick = useCallback((rowIndex: number, column: Column<T>, event: React.MouseEvent) => {
+    console.log('handleCellClick', rowIndex, column, event);
     if (column.editor) {
-      setEditingCell({ rowIndex, columnId: column.id });
+      const rect = event.currentTarget.getBoundingClientRect();
+      console.log('rect', rect);
+      setEditingCell({
+        rowIndex,
+        columnId: column.id,
+        position: {
+          top: rect.bottom + window.scrollY,
+          left: rect.left + window.scrollX,
+        },
+      });
     }
   }, []);
 
@@ -134,7 +144,7 @@ export function VirtualizedDataGrid<T extends Record<string, any>>({
               }}
               onClick={(e) => {
                 e.stopPropagation();
-                handleCellClick(index, column);
+                handleCellClick(index, column, e);
               }}
             >
               <DefaultCell
@@ -143,6 +153,7 @@ export function VirtualizedDataGrid<T extends Record<string, any>>({
                 column={column}
                 isEditing={isCellEditing}
                 onChange={(newValue) => handleCellChange(index, column, newValue)}
+                cellPosition={editingCell?.position}
               />
             </div>
           );
