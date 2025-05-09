@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Column, SortDirection } from '@/types/grid';
 import { Task } from '@/types/task';
 import { mockTasks } from '@/data/mockTasks';
@@ -15,11 +15,19 @@ export default function Home() {
   const [data, setData] = useState<Task[]>(initialTasks);
   const [columns, setColumns] = useState<Column<Task>[]>(initialColumns);
   const [sortedData, setSortedData] = useState<Task[]>(initialTasks);
+  const uploadFormRef = useRef<{ reset: () => void } | null>(null);
 
   const handleDataUploaded = (newData: Task[]) => {
     setData(newData);
     setSortedData(newData);
     setColumns(generateColumnsFromData(newData));
+  };
+
+  const handleReset = () => {
+    setData(initialTasks);
+    setSortedData(initialTasks);
+    setColumns(initialColumns);
+    uploadFormRef.current?.reset();
   };
 
   const handleRowClick = (row: Task) => {
@@ -78,11 +86,7 @@ export default function Home() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Task Management</h1>
           <button
-            onClick={() => {
-              setData(initialTasks);
-              setSortedData(initialTasks);
-              setColumns(initialColumns);
-            }}
+            onClick={handleReset}
             className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
           >
             Reset to Mock Data
@@ -92,6 +96,7 @@ export default function Home() {
           <UploadForm<Task>
             onDataUploaded={handleDataUploaded}
             acceptedFileTypes={['.csv', '.json']}
+            formRef={uploadFormRef}
           />
         </div>
         <VirtualizedDataGrid

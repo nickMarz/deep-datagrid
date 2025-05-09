@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { csvStringToJson } from '@/data/csvToJson';
 
 interface UploadFormProps<T extends Record<string, any>> {
@@ -29,6 +29,10 @@ interface UploadFormProps<T extends Record<string, any>> {
    * @default 5MB
    */
   maxFileSize?: number;
+  /**
+   * Optional ref to access the form methods
+   */
+  formRef?: React.RefObject<{ reset: () => void } | null>;
 }
 
 export function UploadForm<T extends Record<string, any>>({
@@ -38,9 +42,23 @@ export function UploadForm<T extends Record<string, any>>({
   onLoadingChange,
   acceptedFileTypes = ['.csv', '.json'],
   maxFileSize = 5 * 1024 * 1024, // 5MB
+  formRef,
 }: UploadFormProps<T>) {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Expose reset method through ref
+  if (formRef) {
+    formRef.current = {
+      reset: () => {
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        setError(null);
+      }
+    };
+  }
 
   const handleFile = useCallback(async (file: File) => {
     try {
@@ -133,6 +151,7 @@ export function UploadForm<T extends Record<string, any>>({
           onChange={handleFileInput}
           className="hidden"
           id="file-upload"
+          ref={fileInputRef}
         />
         <label
           htmlFor="file-upload"
