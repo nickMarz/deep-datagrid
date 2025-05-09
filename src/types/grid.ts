@@ -1,6 +1,56 @@
 import { UserCellRenderer, UserCellEditor } from '@/components/grid/cells/UserCell';
+import React from 'react';
 
 export type SortDirection = 'asc' | 'desc' | null;
+
+// Default cell renderer for basic types
+const defaultCellRenderer: CellRenderer<any> = {
+  render: (value: any) => {
+    if (value === null || value === undefined) {
+      return React.createElement('span', { className: 'text-gray-400' }, '-');
+    }
+    
+    if (typeof value === 'object') {
+      return React.createElement('span', { className: 'text-gray-600' }, JSON.stringify(value));
+    }
+    
+    return React.createElement('span', null, String(value));
+  }
+};
+
+export interface ColumnConfig {
+  /**
+   * Custom renderer for the column
+   */
+  renderer?: CellRenderer;
+  /**
+   * Custom editor for the column
+   */
+  editor?: CellEditor;
+  /**
+   * Custom width for the column
+   */
+  width?: number;
+  /**
+   * Whether the column is sortable
+   */
+  sortable?: boolean;
+  /**
+   * Custom type for the column
+   */
+  type?: 'text' | 'number' | 'link' | 'tag' | 'custom';
+}
+
+export interface GridConfig {
+  /**
+   * Configuration for specific columns by their key
+   */
+  columns: Record<string, ColumnConfig>;
+  /**
+   * Default configuration for all columns
+   */
+  defaults?: ColumnConfig;
+}
 
 export interface Column<T = any> {
   id: string;
@@ -37,35 +87,40 @@ export interface CellProps<T = any> {
   isEditing?: boolean;
 }
 
-export function generateColumnsFromData<T extends Record<string, any>>(data: T[]): Column<T>[] {
+export function generateColumnsFromData<T extends Record<string, any>>(
+  data: T[],
+  config?: GridConfig
+): Column<T>[] {
   if (!data.length) return [];
   
   const firstRow = data[0];
   return Object.entries(firstRow).map(([key, value]) => {
+    const columnConfig = config?.columns[key] || {};
+    const defaults = config?.defaults || {};
+    
     const column: Column<T> = {
       id: key,
       header: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
-      accessorKey: key,
-      type: 'text',
-      width: 150,
-      sortable: true,
+      accessorKey: key as keyof T,
+      type: columnConfig.type || defaults.type || 'text',
+      width: columnConfig.width || defaults.width || 150,
+      sortable: columnConfig.sortable ?? defaults.sortable ?? true,
+      renderer: columnConfig.renderer || defaults.renderer || defaultCellRenderer,
+      editor: columnConfig.editor || defaults.editor,
     };
 
-    // Special handling for known types
-    if (key === 'assignees' && Array.isArray(value)) {
-      column.type = 'custom';
-      column.width = 200;
-      column.renderer = UserCellRenderer;
-      column.editor = UserCellEditor;
-    } else if (key === 'status') {
-      column.type = 'tag';
-      column.width = 120;
-    } else if (key === 'id') {
-      column.width = 100;
-    } else if (key === 'title') {
-      column.width = 300;
+    // Special handling for known types if not overridden by config
+    if (!columnConfig.type && !defaults.type) {
+      if (key === 'status') {
+        column.type = 'tag';
+        column.width = 120;
+      } else if (key === 'id') {
+        column.width = 100;
+      } else if (key === 'title') {
+        column.width = 300;
+      }
     }
 
     return column;
   });
-} 
+}

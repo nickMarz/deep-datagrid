@@ -1,15 +1,45 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Column, SortDirection } from '@/types/grid';
+import { Column, SortDirection, GridConfig } from '@/types/grid';
 import { Task } from '@/types/task';
 import { mockTasks } from '@/data/mockTasks';
 import { VirtualizedDataGrid } from '@/components/grid/VirtualizedDataGrid';
 import { generateColumnsFromData } from '@/types/grid';
 import { UploadForm } from '@/components/forms/UploadForm';
+import { UserCellRenderer, UserCellEditor } from '@/components/grid/cells/UserCell';
 
 const initialTasks = mockTasks;
-const initialColumns = generateColumnsFromData(initialTasks);
+
+// Grid configuration
+const gridConfig: GridConfig = {
+  defaults: {
+    sortable: true,
+    width: 150,
+  },
+  columns: {
+    id: {
+      width: 100,
+      type: 'text',
+    },
+    title: {
+      width: 300,
+      type: 'text',
+    },
+    status: {
+      width: 120,
+      type: 'tag',
+    },
+    assignees: {
+      width: 200,
+      type: 'custom',
+      renderer: UserCellRenderer,
+      editor: UserCellEditor,
+    },
+  },
+};
+
+const initialColumns = generateColumnsFromData(initialTasks, gridConfig);
 
 export default function Home() {
   const [data, setData] = useState<Task[]>(initialTasks);
@@ -20,7 +50,7 @@ export default function Home() {
   const handleDataUploaded = (newData: Task[]) => {
     setData(newData);
     setSortedData(newData);
-    setColumns(generateColumnsFromData(newData));
+    setColumns(generateColumnsFromData(newData, gridConfig));
   };
 
   const handleReset = () => {
