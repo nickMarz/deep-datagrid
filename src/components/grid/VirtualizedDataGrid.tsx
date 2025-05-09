@@ -5,6 +5,24 @@ import { DefaultCell } from './cell-renderers';
 
 const ROW_HEIGHT = 60; // Height of each row in pixels
 
+const cellStyles = {
+  padding: '8px',
+  borderRight: '1px solid #e5e7eb',
+  borderBottom: '1px solid #e5e7eb',
+  overflow: 'hidden',
+  whiteSpace: 'nowrap',
+  textOverflow: 'ellipsis',
+};
+
+const headerCellStyles = {
+  ...cellStyles,
+  backgroundColor: '#f9fafb',
+  fontWeight: 600,
+  position: 'sticky',
+  top: 0,
+  zIndex: 1,
+};
+
 export function VirtualizedDataGrid<T extends Record<string, any>>({
   data,
   columns,
