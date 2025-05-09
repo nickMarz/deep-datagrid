@@ -1,30 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Column, SortDirection } from '@/types/grid';
 import { Task } from '@/types/task';
-import { UserCellRenderer, UserCellEditor } from '@/components/grid/cells/UserCell';
 import { mockTasks } from '@/data/mockTasks';
 import { VirtualizedDataGrid } from '@/components/grid/VirtualizedDataGrid';
-import { DataGrid } from '@/components/grid/DataGrid';
 import { generateColumnsFromData } from '@/types/grid';
+import { UploadForm } from '@/components/forms/UploadForm';
 
-console.log(mockTasks);
-
-const tasks = mockTasks;
-const columns = generateColumnsFromData(tasks);
+const initialTasks = mockTasks;
+const initialColumns = generateColumnsFromData(initialTasks);
 
 export default function Home() {
-  const [sortedData, setSortedData] = useState<Task[]>([]);
+  const [data, setData] = useState<Task[]>(initialTasks);
+  const [columns, setColumns] = useState<Column<Task>[]>(initialColumns);
+  const [sortedData, setSortedData] = useState<Task[]>(initialTasks);
 
-  useEffect(() => {
-    console.log('Initial mockTasks:', mockTasks);
-    setSortedData(mockTasks);
-  }, []);
-
-  useEffect(() => {
-    console.log('Current sortedData:', sortedData);
-  }, [sortedData]);
+  const handleDataUploaded = (newData: Task[]) => {
+    setData(newData);
+    setSortedData(newData);
+    setColumns(generateColumnsFromData(newData));
+  };
 
   const handleRowClick = (row: Task) => {
     console.log('Row clicked:', row);
@@ -36,11 +32,11 @@ export default function Home() {
 
   const handleSort = (column: Column<Task>, direction: SortDirection) => {
     if (!direction) {
-      setSortedData(mockTasks);
+      setSortedData(data);
       return;
     }
 
-    const sorted = [...mockTasks].sort((a, b) => {
+    const sorted = [...data].sort((a, b) => {
       const aValue = a[column.accessorKey];
       const bValue = b[column.accessorKey];
 
@@ -79,7 +75,25 @@ export default function Home() {
   return (
     <main className="min-h-screen p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Task Management</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Task Management</h1>
+          <button
+            onClick={() => {
+              setData(initialTasks);
+              setSortedData(initialTasks);
+              setColumns(initialColumns);
+            }}
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+          >
+            Reset to Mock Data
+          </button>
+        </div>
+        <div className="mb-6">
+          <UploadForm<Task>
+            onDataUploaded={handleDataUploaded}
+            acceptedFileTypes={['.csv', '.json']}
+          />
+        </div>
         <VirtualizedDataGrid
           data={sortedData}
           columns={columns}

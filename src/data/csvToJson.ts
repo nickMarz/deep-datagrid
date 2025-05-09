@@ -1,5 +1,4 @@
 import { parse } from 'csv-parse/sync';
-import fs from 'fs';
 
 interface CsvToJsonOptions {
   /**
@@ -26,55 +25,6 @@ interface CsvToJsonOptions {
    * @default true
    */
   skipEmpty?: boolean;
-}
-
-/**
- * Converts a CSV file to an array of JSON objects
- * @param filePath Path to the CSV file
- * @param options Configuration options
- * @returns Array of objects where keys are column headers and values are row values
- */
-export function csvToJson<T extends Record<string, any>>(
-  filePath: string,
-  options: CsvToJsonOptions = {}
-): T[] {
-  const {
-    useHeaders = true,
-    headers,
-    trim = true,
-    emptyToNull = true,
-    skipEmpty = true,
-  } = options;
-
-  try {
-    // Read the CSV file
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
-
-    // Parse CSV with options
-    const records = parse(fileContent, {
-      columns: useHeaders ? (headers || true) : false,
-      skip_empty_lines: skipEmpty,
-      trim: trim,
-    });
-
-    // Process the records
-    return records.map((record: any) => {
-      if (emptyToNull) {
-        // Convert empty strings to null
-        Object.keys(record).forEach((key) => {
-          if (record[key] === '') {
-            record[key] = null;
-          }
-        });
-      }
-      return record as T;
-    });
-  } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Failed to convert CSV to JSON: ${error.message}`);
-    }
-    throw error;
-  }
 }
 
 /**
