@@ -13,16 +13,16 @@ const cellStyles = {
   whiteSpace: 'nowrap',
   textOverflow: 'ellipsis',
   flexShrink: 0, // Prevent cell from shrinking
-};
+} as const;
 
 const headerCellStyles = {
   ...cellStyles,
   backgroundColor: '#f9fafb',
   fontWeight: 600,
-  position: 'sticky',
+  position: 'sticky' as const,
   top: 0,
   zIndex: 1,
-};
+} as const;
 
 export function VirtualizedDataGrid<T extends Record<string, any>>({
   data,
