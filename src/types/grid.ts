@@ -1,4 +1,3 @@
-import { UserCellRenderer, UserCellEditor } from '@/components/grid/cells/UserCell';
 import React from 'react';
 
 export type SortDirection = 'asc' | 'desc' | null;
@@ -101,6 +100,7 @@ export interface CellProps<T = any> {
   column: Column<T>;
   onChange?: (value: any) => void;
   isEditing?: boolean;
+  cellPosition?: { top: number; left: number };
 }
 
 export function generateColumnsFromData<T extends Record<string, any>>(

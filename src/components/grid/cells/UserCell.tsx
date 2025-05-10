@@ -58,121 +58,130 @@ export const UserCellRenderer: CellRenderer = {
   },
 };
 
-export const UserCellEditor: CellEditor = {
-  edit: (value: User[], row: any, onChange: (users: User[]) => void, cellPosition?: { top: number; left: number }) => {
-    const [search, setSearch] = useState('');
-    const [users, setUsers] = useState<User[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [selectedUsers, setSelectedUsers] = useState<User[]>(value || []);
-    const searchTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
+interface UserCellEditorProps {
+  value: User[];
+  onChange: (users: User[]) => void;
+  cellPosition?: { top: number; left: number };
+}
 
-    useEffect(() => {
-      const fetchUsers = async () => {
-        try {
-          setLoading(true);
-          setError(null);
-          const response = await fetch(`/api/users?query=${search}&limit=5`);
-          if (!response.ok) throw new Error('Failed to fetch users');
-          const data = await response.json();
-          setUsers(data.users);
-        } catch (err) {
-          setError('Failed to load users');
-          console.error(err);
-        } finally {
-          setLoading(false);
-        }
-      };
+const UserCellEditorComponent: React.FC<UserCellEditorProps> = ({ value, onChange, cellPosition }) => {
+  const [search, setSearch] = useState('');
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedUsers, setSelectedUsers] = useState<User[]>(value || []);
+  const searchTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch(`/api/users?query=${search}&limit=5`);
+        if (!response.ok) throw new Error('Failed to fetch users');
+        const data = await response.json();
+        setUsers(data.users);
+      } catch (err) {
+        setError('Failed to load users');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current);
+    }
+
+    searchTimeout.current = setTimeout(fetchUsers, 300);
+
+    return () => {
       if (searchTimeout.current) {
         clearTimeout(searchTimeout.current);
       }
-
-      searchTimeout.current = setTimeout(fetchUsers, 300);
-
-      return () => {
-        if (searchTimeout.current) {
-          clearTimeout(searchTimeout.current);
-        }
-      };
-    }, [search]);
-
-    const toggleUser = (user: User) => {
-      const isSelected = selectedUsers.some((u) => u.id === user.id);
-      const newUsers = isSelected
-        ? selectedUsers.filter((u) => u.id !== user.id)
-        : [...selectedUsers, user];
-      setSelectedUsers(newUsers);
-      onChange(newUsers);
     };
-    console.log('cellPosition', cellPosition, cellPosition ? `${cellPosition.top + 40}px` : '0px');
-    console.log('cellPosition', cellPosition, cellPosition ? `${cellPosition.left + 40}px` : '0px');
-    const editorContent = (
-      <div
-        className="w-[300px] bg-white rounded-lg shadow-lg p-2"
-        style={{
-          position: 'fixed',
-          top: cellPosition ? `${cellPosition.top + 40}px` : '0px',
-          left: cellPosition ? `${cellPosition.left}px` : '0px',
-          zIndex: 1000,
-        }}
-      >
-        <div className="flex flex-wrap gap-1 mb-2">
-          {selectedUsers.map((user) => (
-            <div
-              key={user.id}
-              className="flex items-center gap-1 bg-blue-50 rounded-full px-2 py-1"
-            >
-              <UserAvatar user={user} size={20} />
-              <span className="text-sm">{user.name}</span>
-              <button
-                onClick={() => toggleUser(user)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ×
-              </button>
-            </div>
-          ))}
-        </div>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search users..."
-          className="w-full px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <div className="mt-2 max-h-[200px] overflow-y-auto">
-          {loading ? (
-            <div className="text-center py-2 text-gray-500">Loading...</div>
-          ) : error ? (
-            <div className="text-center py-2 text-red-500">{error}</div>
-          ) : users.length === 0 ? (
-            <div className="text-center py-2 text-gray-500">No users found</div>
-          ) : (
-            users.map((user) => (
-              <button
-                key={user.id}
-                onClick={() => toggleUser(user)}
-                className={`w-full flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-100 ${
-                  selectedUsers.some((u) => u.id === user.id)
-                    ? 'bg-blue-50'
-                    : ''
-                }`}
-              >
-                <UserAvatar user={user} />
-                <div className="text-left">
-                  <div className="text-sm font-medium">{user.name}</div>
-                  <div className="text-xs text-gray-500">{user.email}</div>
-                </div>
-              </button>
-            ))
-          )}
-        </div>
-      </div>
-    );
+  }, [search]);
 
-    return typeof window !== 'undefined'
-      ? createPortal(editorContent, document.body)
-      : editorContent;
+  const toggleUser = (user: User) => {
+    const isSelected = selectedUsers.some((u) => u.id === user.id);
+    const newUsers = isSelected
+      ? selectedUsers.filter((u) => u.id !== user.id)
+      : [...selectedUsers, user];
+    setSelectedUsers(newUsers);
+    onChange(newUsers);
+  };
+
+  const editorContent = (
+    <div
+      className="w-[300px] bg-white rounded-lg shadow-lg p-2"
+      style={{
+        position: 'fixed',
+        top: cellPosition ? `${cellPosition.top + 40}px` : '0px',
+        left: cellPosition ? `${cellPosition.left}px` : '0px',
+        zIndex: 1000,
+      }}
+    >
+      <div className="flex flex-wrap gap-1 mb-2">
+        {selectedUsers.map((user) => (
+          <div
+            key={user.id}
+            className="flex items-center gap-1 bg-blue-50 rounded-full px-2 py-1"
+          >
+            <UserAvatar user={user} size={20} />
+            <span className="text-sm">{user.name}</span>
+            <button
+              onClick={() => toggleUser(user)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search users..."
+        className="w-full px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <div className="mt-2 max-h-[200px] overflow-y-auto">
+        {loading ? (
+          <div className="text-center py-2 text-gray-500">Loading...</div>
+        ) : error ? (
+          <div className="text-center py-2 text-red-500">{error}</div>
+        ) : users.length === 0 ? (
+          <div className="text-center py-2 text-gray-500">No users found</div>
+        ) : (
+          users.map((user) => (
+            <button
+              key={user.id}
+              onClick={() => toggleUser(user)}
+              className={`w-full flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-100 ${
+                selectedUsers.some((u) => u.id === user.id)
+                  ? 'bg-blue-50'
+                  : ''
+              }`}
+            >
+              <UserAvatar user={user} />
+              <div className="text-left">
+                <div className="text-sm font-medium">{user.name}</div>
+                <div className="text-xs text-gray-500">{user.email}</div>
+              </div>
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  );
+
+  return typeof window !== 'undefined'
+    ? createPortal(editorContent, document.body)
+    : editorContent;
+};
+
+export const UserCellEditor: CellEditor = {
+  edit: (value: User[], row: Record<string, unknown>, onChange: (users: User[]) => void, cellPosition?: { top: number; left: number }) => {
+    return <UserCellEditorComponent value={value} onChange={onChange} cellPosition={cellPosition} />;
   },
 }; 
